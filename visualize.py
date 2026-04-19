@@ -1,28 +1,31 @@
+import sys
 import pandas as pd
-
-df = pd.read_csv("data_preprocessed.csv")
-df.head()
-
-df.info()
-df.describe()
-
-#histogram
 import matplotlib.pyplot as plt
-import seaborn as sns
+import subprocess
 
-df.hist(figsize=(10,8))
-plt.savefig("summary_plot.png")
+if len(sys.argv) < 2:
+    sys.exit(1)
 
-#pairplot
-sns.pairplot(df)
-plt.savefig("pairplot.png")
+file_path = sys.argv[1]
+orig_df = pd.read_csv("data_raw.csv")
 
-#heatmap
-numeric_df = df.select_dtypes(include=['int64', 'float64'])
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
-plt.figure(figsize=(8,6))
-sns.heatmap(numeric_df.corr(), annot=True)
-plt.savefig("heatmap.png")
+# Plot 1: Top categories (meaningful)
+orig_df['Category'].value_counts().head(10).plot(kind='bar', ax=axes[0])
+axes[0].set_title('Top Categories')
+axes[0].tick_params(axis='x', rotation=45)
+
+# Plot 2: Payment methods (meaningful)
+orig_df['Payment Method'].value_counts().plot(kind='pie', ax=axes[1], autopct='%1.1f%%')
+axes[1].set_title('Payment Methods')
+
+# Plot 3: Location (meaningful)
+orig_df['Location'].value_counts().plot(kind='bar', ax=axes[2])
+axes[2].set_title('Location')
 
 plt.tight_layout()
-plt.savefig("summary_plot.png")
+plt.savefig('summary_plot.png')
+print("Saved summary_plot.png")
+
+subprocess.run(['python', 'cluster.py', file_path])
